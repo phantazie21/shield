@@ -1,7 +1,7 @@
 # 🛡️ shield
 **shield** is a highly interactive, modern, and minimalist shell designed to enhance productivity and streamline the coding experience. Built from the ground up with simplicity and performance in mind, **shield** empowers programmers with fast and intuitive command execution, robust customization options, and powerful interactive features.
 
-## ✨ why use shield?
+## ✨ Why use shield?
 -   **Fast and Efficient**: Real-time, character-by-character input processing for smooth and responsive interaction.
     
 -   **Interactive Command Completion**: Built-in tab completion to speed up command entry.
@@ -14,8 +14,20 @@
     
 -   **Built from Scratch**: Implemented in pure C for maximum control and performance.
 
-## 🚀 features
-
+## 🚀 Features
+-   **Tab Completion**: Auto-complete commands and paths with a single keystroke.
+    
+-   **Command History**: Navigate through previous commands with arrow keys.
+    
+-   **Syntax Highlighting**: Intuitive color coding for different types of input (planned).
+    
+-   **Custom Aliases**: Create shortcuts for frequently used commands.
+    
+-   **Real-Time Feedback**: Display output instantly as you type.
+    
+-   **Built-In Commands**: Includes essential commands directly within the shell.
+    
+-   **Script Integration**: Execute shell scripts directly within **shield**.
 ## 🛠️ Installation
 
 ### From Source
@@ -56,3 +68,4 @@ Contributions are welcome! Feel free to open issues or submit pull requests to h
 ## 📝 **License**
 
 **shield** is licensed under the MIT License. See `LICENSE` for more information.
+
