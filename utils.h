@@ -4,4 +4,5 @@
 #include <stdlib.h>
 
 char* read_line();
-int execute_command(char* input);
+char** split_line(char* input);
+int execute_command(char** args);

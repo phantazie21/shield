@@ -1,14 +1,17 @@
 #include "utils.h"
 
 int main(int argc, char** argv) {
-    while (1) {
-        char* input = read_line();
-        if (input == NULL) continue;
+	int status = 0;
+	while (!status) {
+		char* input = read_line();
+		if (input == NULL) continue;
+		char** args = split_line(input);
+		if (args == NULL) continue;
+		status = execute_command(args);
 
-	int command_return = execute_command(input);
-        if (command_return)
-		return command_return;
-        
-        free(input);
-    }
+		free(input);
+		free(args);
+	}
+
+	return status;
 }
