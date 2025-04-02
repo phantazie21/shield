@@ -9,11 +9,23 @@
 #include <stdbool.h>
 
 BuiltInCommand builtins[] = {
-	{"cd", shield_cd},
-	{"quit", shield_exit},
-	{"list", shield_list},
-	{"pwd", shield_pwd},
-	{"find", shield_find}
+	{"cd", shield_cd, "Change directory to the specified path."},
+	{"quit", shield_exit, "Exit the shell."},
+	{"list", shield_list, "List directory contents."},
+	{"pwd", shield_pwd, "Print working directory."},
+	{"find", shield_find, "Find a file or directory by name."},
+	{"help", shield_help, "Get available commands, or detailed description on given one."},
+	{"clear", shield_clear, "Clear the terminal."}
+};
+const char* detailed_help[] = {
+	"\tcd: Changes the current working directory.\n\tUsage: cd <path>",
+	"\tquit: Exits the shell.\n\tUsage: quit",
+	"\tlist: Lists files and directories.\n\tUsage: list (path) (depth)",
+	"\tpwd: Prints the current working directory.\n\tUsage: pwd",
+	"\tfind: Searches for a file or directory.\n\tUsage: find <name> <all/single> (depth)",
+	"\thelp: Get available commands supported by shield, or a detailed description on a given command (works for builtin commands only).\n\tUsage: help (command)",
+	"\tclear: Clear the terminal's content.\n\tUsage: clear",
+	NULL
 };
 
 int list_directory(const char* path, int depth, int max_depth) {
@@ -181,6 +193,29 @@ int shield_find(char** args) {
 		}
 	}
 	find(getenv("HOME"), name, 0, max_depth, single);
+	return 0;
+}
+
+int shield_help(char** args) {
+	if (args[1] == NULL) {
+		printf("Available commands:\n");
+		for (int i = 0; i < num_builtins(); i++) {
+			printf("\t%s - %s\n", builtins[i].name, builtins[i].desc);
+		}
+		return 0;
+	}
+	for (int i = 0; i < num_builtins(); i++) {
+		if (!strcmp(builtins[i].name, args[1])) {
+			printf("Help for %s:\n%s\n", builtins[i].name, detailed_help[i]);
+			return 0;
+		}
+	}
+	fprintf(stderr, "%s command is not supported yet", args[1]);
+	return 1;
+}
+
+int shield_clear(char** args) {
+	printf("\e[1;1H\e[2J");
 	return 0;
 }
 
