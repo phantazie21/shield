@@ -392,7 +392,7 @@ int add_alias(char** args) {
 		idx_to_set = aliases_length;
 	aliases[idx_to_set].name = strdup(name);
 	aliases[idx_to_set].command = alias_command;
-	printf("new alias added to %s:", name);
+	printf("shield: new alias added to %s:", name);
 	for (int i = 0; i < command_len; i++) {
 		printf(" %s", args[2 + i]);
 	}
@@ -415,27 +415,47 @@ int shield_alias(char** args) {
 			}
 		}
 		else {
-			printf("You don't have any aliases yet.\n");
+			printf("shield: you don't have any aliases yet.\n");
 		}
 		return 0;
 	}
 	if (args[2] == NULL) {
-		fprintf(stderr, "shield: expected argument for \"alias\".\n");
+		for (int i = 0; i < aliases_length; i++) {
+			if (!strcmp(args[1], aliases[i].name)) {
+				printf("alias \"%s\" is set to", args[1]);
+				for (int j = 0; aliases[i].command[j]; j++) {
+					printf(" %s", aliases[i].command[j]);
+				}
+				printf("\n");
+				return 0;
+			}
+		}
+		printf("shield: you don't have an alias for %s yet.\n", args[2]);
 		return 1;
 	}
 	return add_alias(args);
 }
 
 int shield_env(char** args) {
-	if (env_length > 0) {
-		printf("shield environment variables:\n");
-		for (int i = 0; i < env_length; i++) {
-			printf("%s=%s\n", env[i].name, env[i].value);
+	if (args[1] == NULL) {
+		if (env_length > 0) {
+			printf("shield environment variables:\n");
+			for (int i = 0; i < env_length; i++) {
+				printf("%s=%s\n", env[i].name, env[i].value);
+			}
+			return 0;
 		}
+		printf("You don't have any environment variables yet.\n");
 		return 0;
 	}
-	printf("You don't have any environment variables yet.\n");
-	return 0;
+	for (int i = 0; i < env_length; i++) {
+		if (!strcmp(args[1], env[i].value)) {
+			printf("environment variable \"%s\" is set to \"%s\".\n", env[i].name, env[i].value);
+			return 0;
+		}
+	}
+	printf("shield: you don't have an environment variable for %s yet.\n", args[1]);
+	return 1;
 }
 
 int add_env(char** args) {
