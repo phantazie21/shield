@@ -1,0 +1,17 @@
+/ .git
+- README.md
+- LICENSE
+- run.sh
+- Makefile
+- .gitignore
+- utils.h
+- main.c
+- shield.env
+- shield.aliases
+- builtin.c
+- builtin.h
+- utils.c
+- main.o
+- utils.o
+- shield
+- fasz

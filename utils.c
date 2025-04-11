@@ -3,6 +3,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <string.h>
+#include <unistd.h>
 
 void set_color_red() {
 	fprintf(stderr, "\033[0;31m");
@@ -13,11 +14,11 @@ void reset_color() {
 }
 
 char* read_line() {
-    char* input = readline("shield > ");
-    if (input && *input) {
-        add_history(input);
-    }
-    return input;
+	char* input = readline("shield > ");
+	if (input && *input) {
+		add_history(input);
+	}
+	return input;
 }
 
 char** split_line(char* input) {
@@ -26,7 +27,7 @@ char** split_line(char* input) {
 	char** tokens = malloc(bufsize * sizeof(char*));
 	char* token;
 	if (!tokens) {
-		printf("malloc failed\n");
+		printf("shield: malloc failed\n");
 		exit(EXIT_FAILURE);
 	}
 	char* delim = " \t\r\n";
@@ -37,7 +38,7 @@ char** split_line(char* input) {
 			bufsize *= 2;
 			tokens = realloc(tokens, bufsize * sizeof(char*));
 			if (!tokens) {
-				printf("realloc failed\n");
+				printf("shield: realloc failed\n");
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -59,15 +60,43 @@ int execute_command(char** args) {
 		}
 	}
 
+	char* file = NULL;
+	if (!strcmp(args[0], "redirect-into") && args[1]) {
+		file = strdup(args[1]);
+		args += 2;
+	}
+
 	for (int i = 0; i < aliases_length; i++) {
 		if (!strcmp(args[0], aliases[i].name)) {
-			return execute_command(aliases[i].command);
+			if (file) {
+				int old_stdout = dup(STDOUT_FILENO);
+				freopen(file, "w", stdout);
+				int return_value = execute_command(aliases[i].command);
+				fflush(stdout);
+				dup2(old_stdout, STDOUT_FILENO);
+				close(old_stdout);
+				return return_value;
+			}
+			else 
+				return execute_command(aliases[i].command);
 		}
 	}
 
 	for (int i = 0; i < num_builtins(); i++) {
-		if (!strcmp(args[0], builtins[i].name))
-			return (*builtins[i].function)(args);
+		if (!strcmp(args[0], builtins[i].name)) {
+			//return (*builtins[i].function)(args);
+			if (file) {
+				int old_stdout = dup(STDOUT_FILENO);
+				freopen(file, "w", stdout);
+				int return_value = (*builtins[i].function)(args);
+				fflush(stdout);
+				dup2(old_stdout, STDOUT_FILENO);
+				close(old_stdout);
+				return return_value;
+			}
+			else 
+				return (*builtins[i].function)(args);
+		}
 	}
 	printf("shield: %s command is not found.\n", args[0]);
 	

@@ -31,6 +31,7 @@ int shield_alias(char** args);
 int shield_env(char** args);
 int shield_setenv(char** args);
 int shield_unsetenv(char** args);
+int shield_redirect_into(char** args);
 
 extern EnvVar* env;
 extern int env_length;

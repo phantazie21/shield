@@ -32,7 +32,8 @@ BuiltInCommand builtins[] = {
 	{"alias", shield_alias, "Give alias for a command, or list the aliases you have given."},
 	{"env", shield_env, "Print the environment variables."},
 	{"setenv", shield_setenv, "Set an environment variable."},
-	{"unsetenv", shield_unsetenv, "Unsets a given environment variable."}
+	{"unsetenv", shield_unsetenv, "Unset a given environment variable."},
+	{"redirect-into", shield_redirect_into, "Redirect output into specified file."}
 };
 const char* detailed_help[] = {
 	"\tcd: Change the current working directory.\n\tUsage: cd <path>",
@@ -50,6 +51,7 @@ const char* detailed_help[] = {
 	"\tenv: Print all the environment variables currently set in shield.\n\tUsage: env",
 	"\tsetenv: Set an environment variable to a given path.\n\tUsage: setenv <name> <path>",
 	"\tunsetenv: Unset an environment variable.\n\tUsage: unsetenv <name>",
+	"\tredirect-into: Redirect the output stream of the given command into file.\n\tUsage: redirect-into <file> <command> (args)",
 	NULL
 };
 
@@ -532,6 +534,11 @@ int shield_unsetenv(char** args) {
 	}
 
 	fprintf(stderr, "shield: environment variable '%s' not found\n", args[1]);
+	return 1;
+}
+
+int shield_redirect_into(char** args) {
+	printf("Usage: redirect-into <file> <command> (args)\n");
 	return 1;
 }
 
