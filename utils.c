@@ -5,6 +5,19 @@
 #include <string.h>
 #include <unistd.h>
 
+int max_commands = 10;
+char*** commands = NULL; 
+
+void free_commands() {
+	for (int i = 0; commands[i]; i++) {
+		for (int j = 0; commands[i][j]; j++) {
+			free(commands[i][j]);
+		}
+		free(commands[i]);
+	}
+	free(commands);
+}
+
 void set_color_red() {
 	fprintf(stderr, "\033[0;31m");
 }
@@ -52,6 +65,11 @@ int execute_command(char** args) {
 	if (args[0] == NULL)
 		return 0;
 
+	if (commands) {
+		free_commands();
+		commands = NULL;
+	}
+
 	for (int i = 0; args[i]; i++) {
 		for (int j = 0; j < env_length; j++) {
 			if (!strcmp(args[i], env[j].name)) {
@@ -66,41 +84,71 @@ int execute_command(char** args) {
 		args += 2;
 	}
 
-	for (int i = 0; i < aliases_length; i++) {
-		if (!strcmp(args[0], aliases[i].name)) {
-			if (file) {
-				int old_stdout = dup(STDOUT_FILENO);
-				freopen(file, "w", stdout);
-				int return_value = execute_command(aliases[i].command);
-				fflush(stdout);
-				dup2(old_stdout, STDOUT_FILENO);
-				close(old_stdout);
-				return return_value;
+	commands = malloc(max_commands * sizeof(char**));
+	commands[0] = malloc(64 * sizeof(char*));
+	int command_count = 0;
+	int arg_count = 0;
+
+	for (int i = 0; args[i]; i++) {
+		if (!strcmp(args[i], "|")) {
+			commands[command_count][arg_count] = NULL;  // null-terminate the current command
+			command_count++;
+			arg_count = 0;
+
+			if (command_count >= max_commands) {
+				max_commands *= 2;
+				commands = realloc(commands, max_commands * sizeof(char**));
 			}
-			else 
-				return execute_command(aliases[i].command);
+			commands[command_count] = malloc(64 * sizeof(char*));  // new command
+			continue;
 		}
+		commands[command_count][arg_count++] = strdup(args[i]);
 	}
 
-	for (int i = 0; i < num_builtins(); i++) {
-		if (!strcmp(args[0], builtins[i].name)) {
-			//return (*builtins[i].function)(args);
-			if (file) {
-				int old_stdout = dup(STDOUT_FILENO);
-				freopen(file, "w", stdout);
-				int return_value = (*builtins[i].function)(args);
-				fflush(stdout);
-				dup2(old_stdout, STDOUT_FILENO);
-				close(old_stdout);
+	int return_value = 0;
+	int found = 0;
+
+	for (int n = 0; n <= command_count; n++) {
+		if (!commands[n] || !commands[n][0]) continue;
+		for (int i = 0; i < aliases_length; i++) {
+			if (!strcmp(commands[n][0], aliases[i].name)) {
+				found = 1;
+				if (file) {
+					int old_stdout = dup(STDOUT_FILENO);
+					freopen(file, "w", stdout);
+					return_value = execute_command(aliases[i].command);
+					fflush(stdout);
+					dup2(old_stdout, STDOUT_FILENO);
+					close(old_stdout);
+				}
+				else
+					return_value = execute_command(aliases[i].command);
 				return return_value;
 			}
-			else 
-				return (*builtins[i].function)(args);
 		}
+
+
+		for (int i = 0; i < num_builtins(); i++) {
+			if (!strcmp(commands[n][0], builtins[i].name)) {
+				found = 1;
+				if (file) {
+					int old_stdout = dup(STDOUT_FILENO);
+					freopen(file, "w", stdout);
+					return_value = (*builtins[i].function)(commands[n]);
+					fflush(stdout);
+					dup2(old_stdout, STDOUT_FILENO);
+					close(old_stdout);
+				}
+				else
+					return_value = (*builtins[i].function)(commands[n]);
+				break;
+			}
+		}
+		if (!found)
+			printf("shield: %s command is not found.\n", args[0]);
 	}
-	printf("shield: %s command is not found.\n", args[0]);
 	
-	return 1;
+	return return_value;
 }
 
 int load_env() {
